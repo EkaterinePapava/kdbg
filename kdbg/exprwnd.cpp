@@ -164,6 +164,9 @@ bool VarTree::updateStructValue(const QString& newValue)
 QString VarTree::displayedValue() const
 {
     auto attemptDecimalConversion = [](const QString& text, qulonglong& num) {
+	// single-digit numbers are too trivial and too noisy in hex
+	if (text.length() == 1)
+	    return false;
 	bool ok = false;
 	num = text.toULongLong(&ok);
 	if (!ok)
