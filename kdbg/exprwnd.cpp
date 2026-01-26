@@ -163,11 +163,22 @@ bool VarTree::updateStructValue(const QString& newValue)
 
 QString VarTree::displayedValue() const
 {
+    auto attemptDecimalConversion = [](const QString& text, qulonglong& num) {
+	bool ok = false;
+	num = text.toULongLong(&ok);
+	if (!ok)
+	    num = text.toLongLong(&ok);		// convert to unsigned
+	return ok;
+    };
+
+    qulonglong num;
     QString text = m_baseValue;
     if (text.isEmpty())
 	text = m_structValue;
     else if (!m_structValue.isEmpty())
 	text += QLatin1String(" ") + m_structValue;
+    else if (attemptDecimalConversion(text, num))
+	text = QLatin1String("%1 (0x%2)").arg(text).arg(num, 0, 16);
     return text;
 }
 
