@@ -174,6 +174,16 @@ QString VarTree::displayedValue() const
 	return ok;
     };
 
+    auto toHex = [](qulonglong num) {
+	QString res;
+	// avoid leading ffffffff of negative values that fit in an uint32_t
+	if ((~num >> 32) == 0)
+	    res.setNum(uint32_t(num), 16);
+	else
+	    res.setNum(num, 16);
+	return res;
+    };
+
     qulonglong num;
     QString text = m_baseValue;
     if (text.isEmpty())
@@ -181,7 +191,7 @@ QString VarTree::displayedValue() const
     else if (!m_structValue.isEmpty())
 	text += QLatin1String(" ") + m_structValue;
     else if (attemptDecimalConversion(text, num))
-	text = QLatin1String("%1 (0x%2)").arg(text).arg(num, 0, 16);
+	text = QLatin1String("%1 (0x%2)").arg(text, toHex(num));
     return text;
 }
 
