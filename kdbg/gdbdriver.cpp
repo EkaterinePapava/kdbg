@@ -1242,15 +1242,27 @@ repeat:
 	//  @0x100400f08: <error reading variable>
 	//  (void (Templated<double>::*)(Templated<double> * const)) 0x400d74 <MostDerived::PrintV()>, this adjustment -16
 
-	const char*p = s;
+	const char* p = s;
     
 	// check for type
-	QString type;
+	bool isFlagEnum = false;
 	if (*p == '(') {
 	    skipNested(p, '(', ')');
 
-	    skipSpace(p);
-	    variable->m_value = QString::fromLatin1(s, p - s);
+	    // Each enumerator of a flag enums represents a bit. Then the value
+	    // is printed as 'or' of several enumerators:
+	    //  (left | right | unknown: 0xf0)
+	    //  (unknown: 0xf0)
+	    static const char orOpEnum[] = " | ", unkownEnum[] = "unknown: ";
+	    isFlagEnum = std::search(s, p, orOpEnum, orOpEnum + 3) != p ||
+			std::search(s, p, unkownEnum, unkownEnum + 9) != p;
+	    if (isFlagEnum) {
+		// parse again later
+		p = s;
+	    } else {
+		skipSpace(p);
+		variable->m_value = QString::fromLatin1(s, p - s);
+	    }
 	}
 
 	bool reference = false;
@@ -1360,6 +1372,8 @@ repeat:
 	    } else {
 		p = e+1;
 	    }
+	} else if (isFlagEnum) {
+	    skipNested(p, '(', ')');
 	} else {
 	moreEnum:
 	    // must be an enumeration value

@@ -49,10 +49,15 @@ namespace {
 namespace B {
 namespace {
 namespace {
-	enum Depth { flat, shallow, deep };
+	enum Depth { flat = 1, shallow = 2, deep = 4 };
+	struct WithDepth {
+	    Depth depth = Depth(0xf0);
+	};
 void g()
 {
 	Depth d = shallow;
+	WithDepth d2;
+	d2.depth = Depth(shallow | deep | 0xf0);
 	S s1, s2;
 	s1.x = 85;
 	s2.y = 17;
