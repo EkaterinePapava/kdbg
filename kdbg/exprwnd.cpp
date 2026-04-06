@@ -163,11 +163,35 @@ bool VarTree::updateStructValue(const QString& newValue)
 
 QString VarTree::displayedValue() const
 {
+    auto attemptDecimalConversion = [](const QString& text, qulonglong& num) {
+	// single-digit numbers are too trivial and too noisy in hex
+	if (text.length() == 1)
+	    return false;
+	bool ok = false;
+	num = text.toULongLong(&ok);
+	if (!ok)
+	    num = text.toLongLong(&ok);		// convert to unsigned
+	return ok;
+    };
+
+    auto toHex = [](qulonglong num) {
+	QString res;
+	// avoid leading ffffffff of negative values that fit in an uint32_t
+	if ((~num >> 32) == 0)
+	    res.setNum(uint32_t(num), 16);
+	else
+	    res.setNum(num, 16);
+	return res;
+    };
+
+    qulonglong num;
     QString text = m_baseValue;
     if (text.isEmpty())
 	text = m_structValue;
     else if (!m_structValue.isEmpty())
 	text += QLatin1String(" ") + m_structValue;
+    else if (attemptDecimalConversion(text, num))
+	text = QLatin1String("%1 (0x%2)").arg(text, toHex(num));
     return text;
 }
 
