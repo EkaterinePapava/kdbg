@@ -60,7 +60,7 @@ jobs:
             "${extra_packages[@]}"
 
       - name: Checkout Git branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build Debian package
         env:
@@ -97,7 +97,7 @@ jobs:
           ls -ld ../*kdbg*.*
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: "kdbg_${{ github.sha }}_kde${{ matrix.kde_major }}_debian_package"
           path: "/home/runner/work/*/*kdbg*.*"
