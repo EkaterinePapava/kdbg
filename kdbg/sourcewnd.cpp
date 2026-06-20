@@ -349,6 +349,19 @@ void SourceWindow::find(const QString& text, bool caseSensitive, FindDirection d
 	setTextCursor(cursor);
 }
 
+bool SourceWindow::gotoLine(int lineNo)
+{
+    // line is zero-based
+    lineNo--;
+
+    if (lineNo < 0 || lineNo >= int(m_sourceCode.size()))
+	return false;
+
+    scrollToRow(lineToRow(lineNo));
+
+    return true;
+}
+
 void SourceWindow::infoMousePress(QMouseEvent* ev)
 {
     // we handle left and middle button
