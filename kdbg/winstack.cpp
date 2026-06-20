@@ -354,6 +354,8 @@ void WinStack::slotViewGotoLine()
 	m_gotoLineDlg.done(0);
     } else {
 	m_gotoLineDlg.show();
+	m_gotoLineDlg.m_lineText.setFocus();
+	m_gotoLineDlg.m_lineText.selectAll();
     }
 }
 
