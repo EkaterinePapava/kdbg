@@ -13,6 +13,8 @@
     <Action name="view_findnext"/>
     <Action name="view_findprev"/>
     <Separator/>
+    <Action name="view_goto_line"/>
+    <Separator/>
     <Action name="view_stack"/>
     <Action name="view_locals"/>
     <Action name="view_watched_expressions"/>

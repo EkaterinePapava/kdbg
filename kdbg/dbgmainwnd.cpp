@@ -276,6 +276,13 @@ void DebuggerMainWnd::initKAction()
     m_findAction = KStandardAction::find(m_filesWindow, SLOT(slotViewFind()), actionCollection());
     KStandardAction::findNext(m_filesWindow, SLOT(slotFindForward()), actionCollection());
     KStandardAction::findPrev(m_filesWindow, SLOT(slotFindBackward()), actionCollection());
+    m_gotoLineAction = KStandardAction::gotoLine(m_filesWindow, &WinStack::slotViewGotoLine, actionCollection());
+    /*
+     * Change KStandardAction::gotoLine's internal name to prevent
+     * auto-generation of the "Go to Line..." action under the "Go" menu
+     * despite specifying the position of "go_goto_line" in the '.rc' file.
+     */
+    actionCollection()->addAction(QStringLiteral("view_goto_line"), m_gotoLineAction);
 
     struct { QWidget* w; const char* id; QAction** act; } dw[] = {
 	{ m_btWindow, "view_stack", &m_btWindowAction },
@@ -518,6 +525,8 @@ void DebuggerMainWnd::updateUI()
 {
     m_findAction->setChecked(m_filesWindow->m_findDlg.isVisible());
     m_findAction->setEnabled(m_filesWindow->hasWindows());
+    m_gotoLineAction->setChecked(m_filesWindow->m_gotoLineDlg.isVisible());
+    m_gotoLineAction->setEnabled(m_filesWindow->hasWindows());
     m_bpSetAction->setEnabled(m_debugger->canChangeBreakpoints());
     m_bpSetTempAction->setEnabled(m_debugger->canChangeBreakpoints());
     m_bpEnableAction->setEnabled(m_debugger->canChangeBreakpoints());

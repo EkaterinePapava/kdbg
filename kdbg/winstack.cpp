@@ -8,6 +8,7 @@
 #include "sourcewnd.h"
 #include "dbgdriver.h"
 #include <QFileInfo>
+#include <QIntValidator>
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QToolTip>
@@ -30,6 +31,9 @@ WinStack::WinStack(QWidget* parent) :
 	    SIGNAL(clicked()), SLOT(slotFindForward()));
     connect(&m_findDlg.m_buttonBackward,
 	    SIGNAL(clicked()), SLOT(slotFindBackward()));
+
+    connect(&m_gotoLineDlg.m_buttonOk,
+	    &QPushButton::clicked, this, &WinStack::slotGotoLine);
 
     connect(this, SIGNAL(setTabWidth(int)), this, SLOT(slotSetTabWidth(int)));
     connect(this, SIGNAL(tabCloseRequested(int)),
@@ -245,6 +249,15 @@ void WinStack::slotFindBackward()
 			     SourceWindow::findBackward);
 }
 
+void WinStack::slotGotoLine()
+{
+    if (activeWindow()) {
+	if (activeWindow()->gotoLine(m_gotoLineDlg.lineNumber())) {
+	    m_gotoLineDlg.done(0);
+	}
+    }
+}
+
 bool WinStack::event(QEvent* evt)
 {
     if (evt->type() != QEvent::ToolTip)
@@ -332,6 +345,17 @@ void WinStack::slotViewFind()
 	m_findDlg.done(0);
     } else {
 	m_findDlg.show();
+    }
+}
+
+void WinStack::slotViewGotoLine()
+{
+    if (m_gotoLineDlg.isVisible()) {
+	m_gotoLineDlg.done(0);
+    } else {
+	m_gotoLineDlg.show();
+	m_gotoLineDlg.m_lineText.setFocus();
+	m_gotoLineDlg.m_lineText.selectAll();
     }
 }
 
@@ -433,6 +457,54 @@ void FindDialog::closeEvent(QCloseEvent* ev)
 }
 
 void FindDialog::done(int result)
+{
+    QDialog::done(result);
+    Q_EMIT closed();
+}
+
+GotoLineDialog::GotoLineDialog() :
+	QDialog(),
+	m_lineText(this),
+	m_buttonOk(this),
+	m_buttonClose(this)
+{
+    setWindowTitle(i18n("Go to Line"));
+
+    m_lineText.setMinimumSize(330, 24);
+    m_lineText.setMaxLength(10000);
+    m_lineText.setFrame(true);
+    m_lineText.setFocus();
+
+    QIntValidator *validator = new QIntValidator(this);
+    validator->setBottom(1);
+    m_lineText.setValidator(validator);
+
+    m_buttonOk.setText(i18n("OK"));
+    m_buttonOk.setDefault(true);
+    m_buttonClose.setText(i18n("Close"));
+
+    connect(&m_buttonClose, &QPushButton::clicked, this, &QDialog::reject);
+
+    m_layout.addWidget(&m_lineText);
+    m_layout.addLayout(&m_buttons);
+
+    m_buttons.addWidget(&m_buttonOk);
+    m_buttons.addWidget(&m_buttonClose);
+
+    setLayout(&m_layout);
+}
+
+GotoLineDialog::~GotoLineDialog()
+{
+}
+
+void GotoLineDialog::closeEvent(QCloseEvent* ev)
+{
+    QDialog::closeEvent(ev);
+    Q_EMIT closed();
+}
+
+void GotoLineDialog::done(int result)
 {
     QDialog::done(result);
     Q_EMIT closed();
